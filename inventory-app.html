@@ -379,7 +379,6 @@ body {
   font-size: 13px; font-weight: 700; flex-shrink: 0; letter-spacing: -0.3px;
 }
 .l-qb { background:#e9f5e9; color:#1a7e1a }
-.l-xero { background:#e2f5fb; color:#0e9fc4 }
 .l-shopify { background:#eef5e6; color:#4a7c00 }
 .l-ext { background:#fef0e8; color:#d4520a }
 
@@ -1433,7 +1432,6 @@ body {
   <div class="sidebar-footer">
     <div class="footer-label">Connected</div>
     <div class="conn-row"><div class="conn-dot"></div><div class="conn-name">QuickBooks</div><div class="conn-tag">Live</div></div>
-    <div class="conn-row"><div class="conn-dot"></div><div class="conn-name">Xero</div><div class="conn-tag">Live</div></div>
     <div class="conn-row"><div class="conn-dot"></div><div class="conn-name">Shopify</div><div class="conn-tag">Live</div></div>
     <div class="conn-row"><div class="conn-dot"></div><div class="conn-name">Extensiv</div><div class="conn-tag">Live</div></div>
   </div>
@@ -1506,10 +1504,6 @@ body {
           <div class="int-info"><div class="int-name">QuickBooks</div><div class="int-sub"><div class="int-dot"></div>Synced 4 min ago</div></div>
           <button class="sync-btn">Sync</button>
         </div>
-        <div class="int-card">
-          <div class="int-logo l-xero">X</div>
-          <div class="int-info"><div class="int-name">Xero</div><div class="int-sub"><div class="int-dot"></div>Synced 11 min ago</div></div>
-          <button class="sync-btn">Sync</button>
         </div>
         <div class="int-card">
           <div class="int-logo l-shopify">S</div>
@@ -2795,6 +2789,115 @@ async function updateOrderStatus(id, status) {
     await loadOrders();
   } catch (e) { console.warn('Order update failed:', e); }
 }
+
+async function loadAccounting() {
+  if (!API_BASE) return;
+  try {
+    const [invoices, bills, pnl] = await Promise.all([
+      api('/qbo/invoices'),
+      api('/qbo/bills'),
+      api('/qbo/pnl'),
+    ]);
+
+    // KPI cards
+    if (pnl) {
+      const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+      const d = new Date();
+      const label = `${months[d.getMonth()]} (${d.getFullYear()})`;
+      document.querySelector('#page-accounting .ps-card:nth-child(1) .ps-label').textContent = `Revenue (${months[d.getMonth()]})`;
+      document.querySelector('#page-accounting .ps-card:nth-child(1) .ps-value').textContent =
+        '$' + (pnl.summary.totalIncome / 1000).toFixed(0) + 'k';
+      document.querySelector('#page-accounting .ps-card:nth-child(2) .ps-value').textContent =
+        '$' + ((pnl.summary.totalIncome - pnl.summary.netIncome) / 1000).toFixed(0) + 'k';
+      document.querySelector('#page-accounting .ps-card:nth-child(4) .ps-value').textContent =
+        '$' + (pnl.summary.netIncome / 1000).toFixed(0) + 'k';
+      document.querySelector('#page-accounting .ps-card:nth-child(4) .ps-label').textContent = 'Net Income';
+    }
+
+    // Recent transactions from invoices
+    if (invoices && invoices.length) {
+      const txnHtml = invoices.slice(0, 8).map(inv => {
+        const col = inv.status === 'paid' ? 'var(--green)' : inv.status === 'partial' ? 'var(--amber)' : 'var(--blue)';
+        return `<div class="rlc-row">
+          <div class="rlc-ico" style="background:var(--bg)">
+            <span class="ms" style="font-size:18px;color:${col}">receipt_long</span>
+          </div>
+          <div class="rlc-main">
+            <div class="rlc-name">${inv.num} · ${inv.customer}</div>
+            <div class="rlc-meta">${inv.date} · ${inv.status}</div>
+          </div>
+          <div style="font-size:14px;font-weight:600;color:var(--text);font-variant-numeric:tabular-nums">$${inv.total.toLocaleString()}</div>
+        </div>`;
+      }).join('');
+      document.getElementById('acctTxns').innerHTML = txnHtml;
+    }
+
+    // AP aging from bills
+    if (bills && bills.length) {
+      const openBills = bills.filter(b => b.status !== 'paid').slice(0, 6);
+      const apHtml = openBills.map(b => {
+        const today = new Date();
+        const due = new Date(b.dueDate);
+        const days = Math.round((due - today) / 86400000);
+        const urgent = days < 5;
+        return `<div class="rlc-row">
+          <div class="rlc-ico" style="background:${urgent ? 'var(--red-light)' : 'var(--bg)'}">
+            <span class="ms" style="font-size:18px;color:${urgent ? 'var(--red)' : 'var(--text-3)'}">receipt</span>
+          </div>
+          <div class="rlc-main">
+            <div class="rlc-name">${b.vendor}</div>
+            <div class="rlc-meta">${b.num} · Due ${b.dueDate}${days >= 0 ? ` · ${days}d` : ' · Overdue'}</div>
+          </div>
+          <div style="font-size:14px;font-weight:600;color:${urgent ? 'var(--red)' : 'var(--text)'};font-variant-numeric:tabular-nums">$${b.balance.toLocaleString()}</div>
+        </div>`;
+      }).join('');
+      if (apHtml) document.getElementById('apAging').innerHTML = apHtml;
+
+      // Update Outstanding Payables KPI
+      const totalPayable = openBills.reduce((s, b) => s + b.balance, 0);
+      document.querySelector('#page-accounting .ps-card:nth-child(3) .ps-value').textContent =
+        '$' + (totalPayable / 1000).toFixed(0) + 'k';
+      document.querySelector('#page-accounting .ps-card:nth-child(3) .ps-delta').textContent =
+        `${openBills.length} invoices due`;
+    }
+  } catch (e) { console.warn('Accounting load failed:', e); }
+}
+
+async function pushOrderToQB(order) {
+  if (!API_BASE) { alert('API_BASE not configured'); return; }
+  const btn = document.getElementById('qbPushBtn');
+  if (btn) { btn.textContent = 'Pushing…'; btn.disabled = true; }
+  try {
+    const inv = await api('/qbo/invoices', { method: 'POST', body: JSON.stringify(order) });
+    if (btn) { btn.textContent = '✓ Pushed'; btn.style.color = 'var(--green)'; }
+    console.log('QB invoice created:', inv);
+  } catch (e) {
+    console.warn('QB push failed:', e);
+    if (btn) { btn.textContent = 'Push failed'; btn.style.color = 'var(--red)'; btn.disabled = false; }
+  }
+}
+
+// Handle OAuth redirect params on page load
+(function handleQBORedirect() {
+  const params = new URLSearchParams(window.location.search);
+  if (params.get('qbo_connected') === '1') {
+    window.history.replaceState({}, '', window.location.pathname);
+    // Show success toast in alert bar
+    const alert = document.getElementById('alertEl');
+    if (alert) {
+      alert.querySelector('.alert-text').textContent = 'QuickBooks connected successfully.';
+      alert.style.display = 'flex';
+      setTimeout(() => { alert.style.opacity = '0'; setTimeout(() => alert.style.display = 'none', 300); }, 4000);
+    }
+  } else if (params.get('qbo_error')) {
+    window.history.replaceState({}, '', window.location.pathname);
+    const alert = document.getElementById('alertEl');
+    if (alert) {
+      alert.querySelector('.alert-text').textContent = `QuickBooks connection failed: ${params.get('qbo_error')}`;
+      alert.style.display = 'flex';
+    }
+  }
+})();
 // ────────────────────────────────────────────────────────────────────────────
 
 // Nav
@@ -2819,10 +2922,11 @@ document.querySelectorAll('.nav-item').forEach(item => {
       else target.style.display = 'block';
     }
 
-    // Load live data from CartRover
+    // Load live data
     if (page === 'inventory') loadInventory();
     else if (page === 'orders') loadOrders();
     else if (page === 'shipping') loadShipments();
+    else if (page === 'accounting') loadAccounting();
 
     // Update topbar
     const titles = { overview:'Overview', inventory:'Inventory', orders:'Orders', manufacturing:'Manufacturing', shipping:'Shipping', purchasing:'Purchasing', accounting:'Accounting', integrations:'Integrations', settings:'Settings' };
@@ -3037,6 +3141,7 @@ function renderOrderDetail() {
   </div>
   <div class="detail-actions">
     <button class="detail-btn-primary">${o.status==='ready'?'Mark Shipped':o.status==='new'?'Start Processing':'Update Status'}</button>
+    <button class="detail-btn-ghost" id="qbPushBtn" onclick="pushOrderToQB(${JSON.stringify(o).replace(/"/g,'&quot;')})">Push to QB</button>
     <button class="detail-btn-ghost">Print</button>
     <button class="detail-btn-ghost">···</button>
   </div>`;
@@ -3888,7 +3993,6 @@ renderPODetail();
 (function initIntegrations() {
   const connected = [
     { short:'QB',  name:'QuickBooks',  col:'#1a7e1a', bg:'#e9f5e9',  desc:'Deep accounting sync: P&L, invoices, COGS auto-posting, and balance sheet in real-time. #1 rated QB integration.',  synced:'2 min ago',  records:'4,218', events:'312 / day' },
-    { short:'XO',  name:'Xero',        col:'#0e9fc4', bg:'#e2f5fb',  desc:'Dual-entry accounting, bank reconciliation, and tax reporting. Top-rated on Xero App Store.',  synced:'5 min ago',  records:'1,847', events:'148 / day' },
     { short:'SH',  name:'Shopify',     col:'#4a7c00', bg:'#eef5e6',  desc:'Orders, products, and inventory levels synced on every transaction.',                    synced:'1 min ago',  records:'9,441', events:'620 / day' },
     { short:'EX',  name:'Extensiv',    col:'#d4520a', bg:'#fef0e8',  desc:'3PL fulfillment: shipment routing, carrier selection, and tracking automatically synced.', synced:'3 min ago',  records:'2,103', events:'204 / day' },
     { short:'AMZ', name:'Amazon',      col:'#d4520a', bg:'#fff4e0',  desc:'Seller Central order import and FBA inventory reconciliation.',                           synced:'8 min ago',  records:'3,612', events:'280 / day' },
@@ -3914,7 +4018,9 @@ renderPODetail();
          <div class="ibc-stat"><div class="ibc-stat-val">${c.events}</div><div class="ibc-stat-lbl">Events</div></div>
        </div>
        <div class="ibc-actions">
-         <button class="ghost" style="font-size:13px">Configure</button>
+         ${c.name === 'QuickBooks' && API_BASE
+           ? `<a href="${API_BASE}/qbo/auth" class="ghost" style="font-size:13px;text-decoration:none">Reconnect</a>`
+           : `<button class="ghost" style="font-size:13px">Configure</button>`}
          <button class="ghost" style="font-size:13px">View logs</button>
          <button class="ghost" style="font-size:13px;margin-left:auto;color:var(--red)">Disconnect</button>
        </div>
