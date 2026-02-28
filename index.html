@@ -5,7 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Ledge | Inventory for Modern Operations</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link href="https://fonts.googleapis.com/css2?family=Inter:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300&family=Playfair+Display:wght@400;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" rel="stylesheet">
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -106,23 +107,44 @@
     }
 
     .hero-h1 {
-      font-size: clamp(52px, 7.5vw, 88px);
-      font-weight: 700;
-      letter-spacing: -0.04em;
-      line-height: 1.02;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
       color: var(--text);
       margin-bottom: 24px;
     }
 
-    .hero-h1 .muted { color: var(--text-3); font-weight: 300; font-style: italic; }
-    .hero-flag {
-      height: 0.72em;
-      width: 0.72em;
-      display: inline-block;
+    .logo-main {
+      font-family: 'Playfair Display', Georgia, serif;
+      font-size: clamp(52px, 7.5vw, 88px);
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      line-height: 1.02;
+      display: flex;
+      align-items: center;
+      gap: 0;
+    }
+
+    .logo-sub {
+      font-family: Inter, -apple-system, sans-serif;
+      font-size: clamp(13px, 1.4vw, 17px);
+      font-weight: 500;
+      letter-spacing: 0.28em;
+      text-transform: uppercase;
+      color: var(--text-3);
+    }
+
+    .hero-leaf {
+      font-family: 'Material Symbols Outlined';
+      font-size: 0.72em;
+      color: #D80621;
       vertical-align: middle;
       position: relative;
-      top: -0.07em;
-      margin: 0 4px;
+      top: -0.05em;
+      margin: 0 6px;
+      font-style: normal;
+      line-height: 1;
     }
 
     .hero-sub {
@@ -835,7 +857,10 @@
 <section class="hero">
   <div class="hero-ambient"></div>
   <p class="eyebrow">Introducing Ledge 2.0</p>
-  <h1 class="hero-h1">First <svg class="hero-flag" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" aria-label="maple leaf"><path d="M50 4 L54 32 L68 22 L60 40 L84 34 L72 51 L88 55 L72 61 L78 78 L56 66 L56 96 L44 96 L44 66 L22 78 L28 61 L12 55 L28 51 L16 34 L40 40 L32 22 L46 32 Z" fill="#D80621"/></svg> Point<br><span class="muted">Energy Supply.</span></h1>
+  <h1 class="hero-h1">
+    <span class="logo-main">First<span class="hero-leaf">energy_savings_leaf</span>Point</span>
+    <span class="logo-sub">Energy Supply</span>
+  </h1>
   <p class="hero-sub">One platform for stock, orders, fulfillment and accounting. Built for the way modern ops teams work.</p>
   <div class="hero-ctas">
     <button class="btn-blue" onclick="openModal('request')">Request Access</button>
