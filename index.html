@@ -1,0 +1,1073 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Ledge — Inventory for Modern Operations</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --white:        #ffffff;
+      --off-white:    #FBFBFD;
+      --surface:      #F5F5F7;
+      --blue:         #0071E3;
+      --blue-hover:   #0077ED;
+      --text:         #1D1D1F;
+      --text-2:       #6E6E73;
+      --text-3:       #86868B;
+      --border:       #D2D2D7;
+      --border-light: #E8E8ED;
+      --radius:       18px;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: Inter, -apple-system, BlinkMacSystemFont, sans-serif;
+      background: var(--white);
+      color: var(--text);
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+      overflow-x: hidden;
+    }
+
+    /* ─── NAV ─────────────────────────────────────────────── */
+    nav {
+      position: fixed;
+      inset: 0 0 auto;
+      z-index: 200;
+      height: 52px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 36px;
+      background: rgba(255,255,255,0.80);
+      backdrop-filter: saturate(180%) blur(24px);
+      -webkit-backdrop-filter: saturate(180%) blur(24px);
+      border-bottom: 1px solid rgba(0,0,0,0.08);
+    }
+
+    .nav-logo {
+      font-size: 17px;
+      font-weight: 600;
+      letter-spacing: -0.5px;
+      color: var(--text);
+      text-decoration: none;
+    }
+
+    .nav-right { display: flex; align-items: center; gap: 28px; }
+
+    .nav-link {
+      font-size: 13.5px;
+      color: var(--text-2);
+      text-decoration: none;
+      font-weight: 400;
+      transition: color 0.15s;
+    }
+    .nav-link:hover { color: var(--text); }
+
+    .nav-btn {
+      font-size: 13.5px;
+      font-weight: 500;
+      color: white;
+      background: var(--text);
+      border: none;
+      cursor: pointer;
+      padding: 7px 16px;
+      border-radius: 980px;
+      letter-spacing: -0.1px;
+      font-family: inherit;
+      transition: background 0.2s;
+    }
+    .nav-btn:hover { background: #3a3a3c; }
+
+    /* ─── HERO ─────────────────────────────────────────────── */
+    .hero {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      padding: 148px 32px 0;
+      background: var(--white);
+    }
+
+    .eyebrow {
+      font-size: 12.5px;
+      font-weight: 500;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--blue);
+      margin-bottom: 22px;
+    }
+
+    .hero-h1 {
+      font-size: clamp(52px, 7.5vw, 88px);
+      font-weight: 700;
+      letter-spacing: -0.04em;
+      line-height: 1.02;
+      color: var(--text);
+      margin-bottom: 24px;
+    }
+
+    .hero-h1 .muted { color: var(--text-3); font-weight: 300; font-style: italic; }
+
+    .hero-sub {
+      font-size: clamp(16px, 1.8vw, 19px);
+      font-weight: 400;
+      line-height: 1.65;
+      color: var(--text-2);
+      max-width: 480px;
+      margin-bottom: 44px;
+      letter-spacing: -0.01em;
+    }
+
+    .hero-ctas { display: flex; gap: 16px; align-items: center; }
+
+    .btn-blue {
+      font-size: 15px;
+      font-weight: 500;
+      color: white;
+      background: var(--blue);
+      border: none;
+      cursor: pointer;
+      padding: 13px 26px;
+      border-radius: 980px;
+      letter-spacing: -0.15px;
+      font-family: inherit;
+      transition: background 0.2s, transform 0.15s;
+    }
+    .btn-blue:hover { background: var(--blue-hover); transform: scale(1.015); }
+    .btn-blue:active { transform: scale(0.998); }
+
+    .btn-text {
+      font-size: 15px;
+      font-weight: 500;
+      color: var(--blue);
+      background: none;
+      border: none;
+      cursor: pointer;
+      letter-spacing: -0.15px;
+      font-family: inherit;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      transition: opacity 0.15s;
+    }
+    .btn-text:hover { opacity: 0.72; }
+    .btn-text .arrow { transition: transform 0.15s; }
+    .btn-text:hover .arrow { transform: translateX(3px); }
+
+    /* ─── SCREEN MOCKUP ────────────────────────────────────── */
+    .screen-wrap {
+      margin-top: 72px;
+      width: 100%;
+      max-width: 1080px;
+      position: relative;
+    }
+
+    .screen-glow {
+      position: absolute;
+      inset: -60px;
+      background: radial-gradient(ellipse 80% 50% at 50% 100%, rgba(0,113,227,0.10), transparent);
+      pointer-events: none;
+    }
+
+    .app-window {
+      background: #1C1C1E;
+      border-radius: 14px;
+      overflow: hidden;
+      box-shadow:
+        0 1px 0   rgba(255,255,255,0.08) inset,
+        0 2px 4px rgba(0,0,0,0.06),
+        0 12px 32px rgba(0,0,0,0.12),
+        0 48px 96px rgba(0,0,0,0.16);
+      border: 1px solid rgba(255,255,255,0.06);
+    }
+
+    .chrome {
+      height: 34px;
+      background: #2C2C2E;
+      display: flex;
+      align-items: center;
+      padding: 0 14px;
+      gap: 7px;
+      border-bottom: 1px solid rgba(255,255,255,0.05);
+      flex-shrink: 0;
+    }
+    .chrome-dot { width: 11px; height: 11px; border-radius: 50%; }
+
+    .app-inner {
+      height: 440px;
+      display: flex;
+      background: var(--surface);
+      overflow: hidden;
+    }
+
+    /* Mock sidebar */
+    .m-sidebar {
+      width: 172px;
+      background: rgba(255,255,255,0.72);
+      border-right: 1px solid var(--border-light);
+      flex-shrink: 0;
+      padding: 14px 0;
+    }
+
+    .m-logo {
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: -0.4px;
+      padding: 0 14px 12px;
+      border-bottom: 1px solid var(--border-light);
+      margin-bottom: 6px;
+    }
+
+    .m-sec {
+      font-size: 9px;
+      font-weight: 600;
+      letter-spacing: 0.07em;
+      text-transform: uppercase;
+      color: var(--text-3);
+      padding: 10px 14px 5px;
+    }
+
+    .m-row {
+      font-size: 11.5px;
+      color: var(--text-2);
+      padding: 5px 8px;
+      margin: 0 6px;
+      border-radius: 6px;
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      cursor: default;
+    }
+    .m-row.active { background: rgba(0,113,227,0.08); color: var(--blue); font-weight: 500; }
+
+    .m-dot { width: 5px; height: 5px; border-radius: 50%; flex-shrink: 0; }
+
+    /* Mock main */
+    .m-main { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
+
+    .m-topbar {
+      height: 42px;
+      background: rgba(255,255,255,0.88);
+      border-bottom: 1px solid var(--border-light);
+      display: flex;
+      align-items: center;
+      padding: 0 18px;
+      gap: 10px;
+      flex-shrink: 0;
+    }
+
+    .m-title { font-size: 13px; font-weight: 600; letter-spacing: -0.3px; }
+    .m-spacer { flex: 1; }
+
+    .m-pill {
+      height: 24px;
+      border-radius: 980px;
+      background: var(--surface);
+      border: 1px solid var(--border-light);
+      width: 120px;
+    }
+
+    .m-avatar {
+      width: 24px; height: 24px;
+      border-radius: 50%;
+      background: var(--blue);
+    }
+
+    .m-table { width: 100%; border-collapse: collapse; }
+
+    .m-table th {
+      font-size: 9.5px;
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--text-3);
+      padding: 8px 12px;
+      border-bottom: 1px solid var(--border-light);
+      text-align: left;
+      white-space: nowrap;
+    }
+
+    .m-table td {
+      padding: 7.5px 12px;
+      border-bottom: 1px solid rgba(0,0,0,0.035);
+      font-size: 11px;
+      color: var(--text);
+    }
+
+    .m-sku { font-family: 'SF Mono', 'Fira Code', monospace; color: var(--blue); font-size: 10px; }
+
+    .m-badge {
+      display: inline-block;
+      padding: 2px 7px;
+      border-radius: 980px;
+      font-size: 9.5px;
+      font-weight: 600;
+    }
+    .b-ok   { background:#E9F5E9; color:#2E7D32; }
+    .b-low  { background:#FFF3E0; color:#E65100; }
+    .b-crit { background:#FFEBEE; color:#C62828; }
+
+    /* ─── FEATURES ─────────────────────────────────────────── */
+    .features {
+      padding: 130px 32px 110px;
+      background: var(--off-white);
+    }
+
+    .section-header {
+      text-align: center;
+      margin-bottom: 72px;
+    }
+
+    .section-h2 {
+      font-size: clamp(32px, 4.5vw, 52px);
+      font-weight: 700;
+      letter-spacing: -0.04em;
+      line-height: 1.06;
+      color: var(--text);
+      margin-bottom: 16px;
+    }
+
+    .section-p {
+      font-size: 17px;
+      color: var(--text-2);
+      max-width: 440px;
+      margin: 0 auto;
+      line-height: 1.65;
+      letter-spacing: -0.01em;
+    }
+
+    .feat-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      max-width: 960px;
+      margin: 0 auto;
+      gap: 2px;
+    }
+
+    .feat-card {
+      background: var(--white);
+      padding: 44px 36px 48px;
+    }
+    .feat-card:first-child { border-radius: var(--radius) 0 0 var(--radius); }
+    .feat-card:last-child  { border-radius: 0 var(--radius) var(--radius) 0; }
+
+    .feat-icon {
+      width: 46px; height: 46px;
+      border-radius: 13px;
+      background: var(--surface);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 22px;
+    }
+
+    .feat-icon svg { opacity: 0.75; }
+
+    .feat-name {
+      font-size: 17px;
+      font-weight: 600;
+      letter-spacing: -0.4px;
+      color: var(--text);
+      margin-bottom: 10px;
+    }
+
+    .feat-desc {
+      font-size: 14.5px;
+      color: var(--text-2);
+      line-height: 1.65;
+      letter-spacing: -0.05px;
+    }
+
+    /* ─── NUMBERS ──────────────────────────────────────────── */
+    .numbers {
+      background: var(--text);
+      padding: 100px 32px;
+    }
+
+    .numbers-inner {
+      max-width: 800px;
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 0;
+    }
+
+    .num-item {
+      text-align: center;
+      padding: 0 40px;
+      border-right: 1px solid rgba(255,255,255,0.1);
+    }
+    .num-item:last-child { border-right: none; }
+
+    .num-val {
+      font-size: 56px;
+      font-weight: 700;
+      color: white;
+      letter-spacing: -0.05em;
+      line-height: 1;
+      margin-bottom: 10px;
+    }
+
+    .num-label {
+      font-size: 14px;
+      color: rgba(255,255,255,0.45);
+      letter-spacing: -0.01em;
+    }
+
+    /* ─── TESTIMONIAL ──────────────────────────────────────── */
+    .testimony {
+      padding: 130px 32px;
+      background: var(--white);
+      text-align: center;
+    }
+
+    .quote-mark {
+      font-size: 72px;
+      line-height: 0.6;
+      color: var(--border-light);
+      font-family: Georgia, serif;
+      margin-bottom: 32px;
+      display: block;
+    }
+
+    .quote-body {
+      font-size: clamp(20px, 3vw, 30px);
+      font-weight: 500;
+      letter-spacing: -0.03em;
+      line-height: 1.3;
+      color: var(--text);
+      max-width: 700px;
+      margin: 0 auto 36px;
+    }
+
+    .quote-person {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+    }
+
+    .quote-avatar {
+      width: 38px; height: 38px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #667eea, #764ba2);
+      flex-shrink: 0;
+    }
+
+    .quote-name {
+      font-size: 13.5px;
+      color: var(--text-2);
+      text-align: left;
+    }
+    .quote-name strong { display: block; color: var(--text); font-weight: 500; font-size: 14.5px; letter-spacing: -0.2px; }
+
+    /* ─── CLOSING CTA ──────────────────────────────────────── */
+    .cta-section {
+      padding: 130px 32px 140px;
+      background: var(--off-white);
+      text-align: center;
+    }
+
+    .cta-h2 {
+      font-size: clamp(36px, 5.5vw, 64px);
+      font-weight: 700;
+      letter-spacing: -0.04em;
+      line-height: 1.04;
+      color: var(--text);
+      margin-bottom: 20px;
+    }
+
+    .cta-sub {
+      font-size: 17px;
+      color: var(--text-2);
+      letter-spacing: -0.01em;
+      margin-bottom: 44px;
+    }
+
+    .cta-actions { display: flex; gap: 16px; justify-content: center; align-items: center; }
+
+    /* ─── FOOTER ───────────────────────────────────────────── */
+    footer {
+      padding: 32px 36px;
+      background: var(--off-white);
+      border-top: 1px solid var(--border-light);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .footer-logo { font-size: 14px; font-weight: 600; letter-spacing: -0.3px; color: var(--text-2); }
+    .footer-copy { font-size: 12.5px; color: var(--text-3); }
+
+    /* ─── MODAL ────────────────────────────────────────────── */
+    .overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.36);
+      backdrop-filter: blur(24px) saturate(160%);
+      -webkit-backdrop-filter: blur(24px) saturate(160%);
+      z-index: 500;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.22s ease;
+    }
+    .overlay.open {
+      opacity: 1;
+      pointer-events: all;
+    }
+
+    .modal {
+      background: rgba(255,255,255,0.96);
+      backdrop-filter: blur(48px);
+      border-radius: 20px;
+      width: 400px;
+      padding: 36px 36px 32px;
+      box-shadow:
+        0 0 0 0.5px rgba(0,0,0,0.06),
+        0 8px 24px rgba(0,0,0,0.10),
+        0 40px 80px rgba(0,0,0,0.18);
+      transform: scale(0.96) translateY(10px);
+      opacity: 0;
+      transition: transform 0.28s cubic-bezier(0.34,1.4,0.64,1), opacity 0.22s ease;
+      position: relative;
+    }
+    .overlay.open .modal {
+      transform: scale(1) translateY(0);
+      opacity: 1;
+    }
+
+    .modal-x {
+      position: absolute;
+      top: 14px; right: 14px;
+      width: 28px; height: 28px;
+      border-radius: 50%;
+      background: var(--surface);
+      border: none;
+      cursor: pointer;
+      font-size: 13px;
+      color: var(--text-3);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: inherit;
+      transition: background 0.15s, color 0.15s;
+    }
+    .modal-x:hover { background: var(--border-light); color: var(--text); }
+
+    .modal-wordmark {
+      text-align: center;
+      font-size: 19px;
+      font-weight: 700;
+      letter-spacing: -0.6px;
+      color: var(--text);
+      margin-bottom: 26px;
+    }
+
+    /* Segmented tab */
+    .seg {
+      display: flex;
+      background: var(--surface);
+      border-radius: 10px;
+      padding: 3px;
+      gap: 2px;
+      margin-bottom: 28px;
+    }
+
+    .seg-btn {
+      flex: 1;
+      font-size: 13.5px;
+      font-weight: 500;
+      color: var(--text-2);
+      background: transparent;
+      border: none;
+      cursor: pointer;
+      padding: 7px 10px;
+      border-radius: 8px;
+      letter-spacing: -0.1px;
+      font-family: inherit;
+      transition: all 0.18s ease;
+    }
+    .seg-btn.on {
+      background: var(--white);
+      color: var(--text);
+      box-shadow: 0 1px 4px rgba(0,0,0,0.10), 0 0 0 0.5px rgba(0,0,0,0.04);
+    }
+
+    /* Panels */
+    .panel { display: none; }
+    .panel.on { display: block; }
+
+    /* Form */
+    .field { margin-bottom: 14px; }
+
+    .field label {
+      display: block;
+      font-size: 11.5px;
+      font-weight: 500;
+      color: var(--text-2);
+      letter-spacing: 0.02em;
+      margin-bottom: 6px;
+      text-transform: uppercase;
+    }
+
+    .field input {
+      width: 100%;
+      height: 44px;
+      background: var(--surface);
+      border: 1px solid var(--border-light);
+      border-radius: 10px;
+      padding: 0 14px;
+      font-size: 15px;
+      color: var(--text);
+      font-family: inherit;
+      outline: none;
+      letter-spacing: -0.1px;
+      transition: border-color 0.15s, box-shadow 0.15s;
+    }
+    .field input::placeholder { color: var(--text-3); }
+    .field input:focus {
+      border-color: var(--blue);
+      box-shadow: 0 0 0 3px rgba(0,113,227,0.12);
+    }
+
+    .modal-submit {
+      width: 100%;
+      height: 46px;
+      background: var(--text);
+      color: white;
+      border: none;
+      border-radius: 12px;
+      font-size: 15px;
+      font-weight: 600;
+      cursor: pointer;
+      margin-top: 20px;
+      letter-spacing: -0.2px;
+      font-family: inherit;
+      transition: background 0.18s, transform 0.14s;
+    }
+    .modal-submit:hover { background: #3a3a3c; transform: scale(1.004); }
+    .modal-submit:active { transform: scale(0.998); }
+
+    .modal-hint {
+      font-size: 12px;
+      color: var(--text-3);
+      text-align: center;
+      margin-top: 14px;
+      line-height: 1.5;
+    }
+    .modal-hint a { color: var(--blue); text-decoration: none; }
+    .modal-hint a:hover { text-decoration: underline; }
+
+    /* Success */
+    .modal-success {
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      padding: 16px 0 8px;
+    }
+    .modal-success.on { display: flex; }
+
+    .success-ring {
+      width: 60px; height: 60px;
+      border-radius: 50%;
+      background: #E9F5E9;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 20px;
+    }
+
+    .success-check {
+      width: 24px; height: 24px;
+      stroke: #2E7D32;
+      stroke-width: 2.5;
+      fill: none;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+
+    .success-h {
+      font-size: 19px;
+      font-weight: 700;
+      letter-spacing: -0.5px;
+      color: var(--text);
+      margin-bottom: 10px;
+    }
+
+    .success-p {
+      font-size: 14px;
+      color: var(--text-2);
+      line-height: 1.6;
+      letter-spacing: -0.1px;
+    }
+  </style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <a class="nav-logo" href="#">Ledge</a>
+  <div class="nav-right">
+    <a class="nav-link" href="#features">Features</a>
+    <a class="nav-link" href="#why">Why Ledge</a>
+    <button class="nav-btn" onclick="openModal('login')">Log In</button>
+  </div>
+</nav>
+
+
+<!-- ═══ HERO ═══ -->
+<section class="hero">
+  <p class="eyebrow">Introducing Ledge 2.0</p>
+  <h1 class="hero-h1">Inventory.<br><span class="muted">Reimagined.</span></h1>
+  <p class="hero-sub">One platform for stock, orders, fulfillment, and accounting — built for the way modern operations teams work.</p>
+  <div class="hero-ctas">
+    <button class="btn-blue" onclick="openModal('request')">Request Access</button>
+    <button class="btn-text" onclick="openModal('login')">
+      Log In <span class="arrow">→</span>
+    </button>
+  </div>
+
+  <!-- App window mockup -->
+  <div class="screen-wrap">
+    <div class="screen-glow"></div>
+    <div class="app-window">
+      <div class="chrome">
+        <div class="chrome-dot" style="background:#FF5F57"></div>
+        <div class="chrome-dot" style="background:#FFBD2E"></div>
+        <div class="chrome-dot" style="background:#28C840"></div>
+      </div>
+      <div class="app-inner">
+
+        <div class="m-sidebar">
+          <div class="m-logo">Ledge</div>
+          <div class="m-sec">Workspace</div>
+          <div class="m-row active">
+            <div class="m-dot" style="background:var(--blue)"></div>
+            Inventory
+          </div>
+          <div class="m-row">
+            <div class="m-dot" style="background:var(--text-3)"></div>
+            Orders
+          </div>
+          <div class="m-row">
+            <div class="m-dot" style="background:var(--text-3)"></div>
+            Manufacturing
+          </div>
+          <div class="m-sec">Logistics</div>
+          <div class="m-row">
+            <div class="m-dot" style="background:var(--text-3)"></div>
+            Shipping
+          </div>
+          <div class="m-row">
+            <div class="m-dot" style="background:var(--text-3)"></div>
+            Purchasing
+          </div>
+          <div class="m-sec">Finance</div>
+          <div class="m-row">
+            <div class="m-dot" style="background:var(--text-3)"></div>
+            Accounting
+          </div>
+          <div class="m-sec">System</div>
+          <div class="m-row">
+            <div class="m-dot" style="background:var(--text-3)"></div>
+            Integrations
+          </div>
+        </div>
+
+        <div class="m-main">
+          <div class="m-topbar">
+            <div class="m-title">Inventory</div>
+            <div class="m-spacer"></div>
+            <div class="m-pill"></div>
+            <div class="m-avatar"></div>
+          </div>
+          <div style="overflow:hidden;flex:1">
+            <table class="m-table">
+              <thead>
+                <tr>
+                  <th>SKU</th>
+                  <th>Item Name</th>
+                  <th>Category</th>
+                  <th>On Hand</th>
+                  <th>Reorder At</th>
+                  <th>Cost</th>
+                  <th>Status</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td class="m-sku">SKU-00291</td>
+                  <td>Titanium Frame Kit</td>
+                  <td style="color:var(--text-2)">Components</td>
+                  <td>142</td><td>50</td><td>$97.00</td>
+                  <td><span class="m-badge b-ok">OK</span></td>
+                </tr>
+                <tr>
+                  <td class="m-sku">SKU-00501</td>
+                  <td>Control Board v3.2</td>
+                  <td style="color:var(--text-2)">Electronics</td>
+                  <td>38</td><td>40</td><td>$142.00</td>
+                  <td><span class="m-badge b-low">Low</span></td>
+                </tr>
+                <tr>
+                  <td class="m-sku">SKU-00104</td>
+                  <td>Hex Bolt M6×20 SS</td>
+                  <td style="color:var(--text-2)">Hardware</td>
+                  <td>2,400</td><td>500</td><td>$0.44</td>
+                  <td><span class="m-badge b-ok">OK</span></td>
+                </tr>
+                <tr>
+                  <td class="m-sku">SKU-00312</td>
+                  <td>Polymer Seal Ring</td>
+                  <td style="color:var(--text-2)">Components</td>
+                  <td>189</td><td>100</td><td>$12.80</td>
+                  <td><span class="m-badge b-ok">OK</span></td>
+                </tr>
+                <tr>
+                  <td class="m-sku">SKU-00788</td>
+                  <td>Servo Motor 24V</td>
+                  <td style="color:var(--text-2)">Electronics</td>
+                  <td>12</td><td>20</td><td>$88.50</td>
+                  <td><span class="m-badge b-crit">Critical</span></td>
+                </tr>
+                <tr>
+                  <td class="m-sku">SKU-00144</td>
+                  <td>Carbon Fiber Sheet</td>
+                  <td style="color:var(--text-2)">Raw Material</td>
+                  <td>74</td><td>30</td><td>$41.20</td>
+                  <td><span class="m-badge b-ok">OK</span></td>
+                </tr>
+                <tr>
+                  <td class="m-sku">SKU-00092</td>
+                  <td>Precision Bearing</td>
+                  <td style="color:var(--text-2)">Components</td>
+                  <td>310</td><td>80</td><td>$8.75</td>
+                  <td><span class="m-badge b-ok">OK</span></td>
+                </tr>
+                <tr>
+                  <td class="m-sku">SKU-00551</td>
+                  <td>LED Array Panel</td>
+                  <td style="color:var(--text-2)">Electronics</td>
+                  <td>27</td><td>30</td><td>$64.00</td>
+                  <td><span class="m-badge b-low">Low</span></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ═══ FEATURES ═══ -->
+<section class="features" id="features">
+  <div class="section-header">
+    <p class="eyebrow">Built for scale</p>
+    <h2 class="section-h2">Every corner of<br>your operation.</h2>
+    <p class="section-p">From the warehouse floor to the finance team — Ledge keeps everything in sync, in real time.</p>
+  </div>
+
+  <div class="feat-grid">
+    <div class="feat-card">
+      <div class="feat-icon">
+        <svg width="22" height="22" fill="none" stroke="var(--text)" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 1 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/>
+          <polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/>
+        </svg>
+      </div>
+      <div class="feat-name">Inventory</div>
+      <p class="feat-desc">Real-time stock levels, automated reorder alerts, and cycle counts — all unified in a single live view.</p>
+    </div>
+    <div class="feat-card">
+      <div class="feat-icon">
+        <svg width="22" height="22" fill="none" stroke="var(--text)" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="1" y="3" width="15" height="13"/><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/>
+        </svg>
+      </div>
+      <div class="feat-name">Orders & Fulfillment</div>
+      <p class="feat-desc">End-to-end order management from creation through shipment, synced with every sales channel automatically.</p>
+    </div>
+    <div class="feat-card">
+      <div class="feat-icon">
+        <svg width="22" height="22" fill="none" stroke="var(--text)" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
+        </svg>
+      </div>
+      <div class="feat-name">Accounting</div>
+      <p class="feat-desc">QuickBooks sync, automatic COGS posting, P&L reporting, and AP aging — with zero manual entry.</p>
+    </div>
+  </div>
+</section>
+
+
+<!-- ═══ NUMBERS ═══ -->
+<section class="numbers">
+  <div class="numbers-inner">
+    <div class="num-item">
+      <div class="num-val">99.9%</div>
+      <div class="num-label">Uptime SLA</div>
+    </div>
+    <div class="num-item">
+      <div class="num-val">12ms</div>
+      <div class="num-label">Avg. API response</div>
+    </div>
+    <div class="num-item">
+      <div class="num-val">6</div>
+      <div class="num-label">Native integrations</div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ═══ TESTIMONIAL ═══ -->
+<section class="testimony" id="why">
+  <span class="quote-mark">"</span>
+  <blockquote class="quote-body">We replaced three separate tools with Ledge. Our operations team gets more done before 10am than they used to in an entire day.</blockquote>
+  <div class="quote-person">
+    <div class="quote-avatar"></div>
+    <div class="quote-name">
+      <strong>Sarah Chen</strong>
+      VP Operations · Meridian Manufacturing
+    </div>
+  </div>
+</section>
+
+
+<!-- ═══ CLOSING CTA ═══ -->
+<section class="cta-section">
+  <h2 class="cta-h2">Ready to<br>get started?</h2>
+  <p class="cta-sub">Request access from your administrator, or log in if you already have an account.</p>
+  <div class="cta-actions">
+    <button class="btn-blue" onclick="openModal('request')">Request Access</button>
+    <button class="btn-text" onclick="openModal('login')">Log In <span class="arrow">→</span></button>
+  </div>
+</section>
+
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-logo">Ledge</div>
+  <div class="footer-copy">© 2026 Ledge. All rights reserved.</div>
+</footer>
+
+
+<!-- ═══ MODAL ═══ -->
+<div class="overlay" id="overlay" onclick="onOverlayClick(event)">
+  <div class="modal" id="modal">
+    <button class="modal-x" onclick="closeModal()">✕</button>
+
+    <div class="modal-wordmark">Ledge</div>
+
+    <div class="seg" id="segBar">
+      <button class="seg-btn on" id="seg-login" onclick="switchTab('login')">Log In</button>
+      <button class="seg-btn"    id="seg-request" onclick="switchTab('request')">Request Access</button>
+    </div>
+
+    <!-- Login panel -->
+    <div class="panel on" id="panel-login">
+      <div class="field">
+        <label>Email</label>
+        <input type="email" placeholder="you@company.com" autocomplete="email" id="loginEmail">
+      </div>
+      <div class="field">
+        <label>Password</label>
+        <input type="password" placeholder="••••••••" autocomplete="current-password" id="loginPass">
+      </div>
+      <button class="modal-submit" onclick="doLogin()">Sign In</button>
+      <p class="modal-hint"><a href="#">Forgot password?</a></p>
+    </div>
+
+    <!-- Request access panel -->
+    <div class="panel" id="panel-request">
+      <div class="field">
+        <label>Full Name</label>
+        <input type="text" placeholder="Jane Smith" autocomplete="name">
+      </div>
+      <div class="field">
+        <label>Work Email</label>
+        <input type="email" placeholder="you@company.com" autocomplete="email">
+      </div>
+      <div class="field">
+        <label>Company</label>
+        <input type="text" placeholder="Acme Corp" autocomplete="organization">
+      </div>
+      <button class="modal-submit" onclick="doRequest()">Request Access</button>
+      <p class="modal-hint">Your administrator will be notified and can approve your access.</p>
+    </div>
+
+    <!-- Success state -->
+    <div class="modal-success" id="successState">
+      <div class="success-ring">
+        <svg class="success-check" viewBox="0 0 24 24">
+          <polyline points="20 6 9 17 4 12"/>
+        </svg>
+      </div>
+      <div class="success-h">Request sent</div>
+      <p class="success-p">Your administrator has been notified.<br>You'll receive an email once access is approved.</p>
+    </div>
+
+  </div>
+</div>
+
+
+<script>
+  // ─── Modal ──────────────────────────────────────────────────
+  function openModal(tab) {
+    switchTab(tab);
+    document.getElementById('overlay').classList.add('open');
+    document.body.style.overflow = 'hidden';
+  }
+
+  function closeModal() {
+    document.getElementById('overlay').classList.remove('open');
+    document.body.style.overflow = '';
+    setTimeout(resetModal, 280);
+  }
+
+  function resetModal() {
+    document.getElementById('successState').classList.remove('on');
+    document.getElementById('segBar').style.display = '';
+    document.querySelectorAll('.panel').forEach(p => { p.style.display = ''; });
+    switchTab('login');
+  }
+
+  function onOverlayClick(e) {
+    if (e.target === document.getElementById('overlay')) closeModal();
+  }
+
+  function switchTab(tab) {
+    ['login','request'].forEach(t => {
+      document.getElementById('seg-' + t).classList.toggle('on', t === tab);
+      document.getElementById('panel-' + t).classList.toggle('on', t === tab);
+    });
+    document.getElementById('successState').classList.remove('on');
+  }
+
+  function doLogin() {
+    // Redirect to the app — replace with real auth in production
+    window.location.href = 'inventory-app.html';
+  }
+
+  function doRequest() {
+    document.querySelectorAll('.panel').forEach(p => p.style.display = 'none');
+    document.getElementById('segBar').style.display = 'none';
+    document.getElementById('successState').classList.add('on');
+  }
+
+  document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal(); });
+</script>
+</body>
+</html>

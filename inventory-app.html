@@ -71,6 +71,9 @@ body {
   display: flex;
   align-items: center;
   gap: 11px;
+  text-decoration: none;
+  color: inherit;
+  cursor: pointer;
 }
 
 .logo-mark {
@@ -101,7 +104,23 @@ body {
   text-transform: uppercase;
   color: var(--text-3);
   padding: 12px 10px 6px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  -webkit-user-select: none;
+  user-select: none;
 }
+.nav-label-chev {
+  font-size: 16px;
+  line-height: 1;
+  color: var(--text-3);
+  transition: transform 0.2s cubic-bezier(0.22,1,0.36,1);
+  flex-shrink: 0;
+  opacity: 0.7;
+}
+.nav-section.collapsed .nav-item { display: none; }
+.nav-section.collapsed .nav-label-chev { transform: rotate(180deg); }
 
 .nav-item {
   display: flex;
@@ -1084,6 +1103,21 @@ body {
 .settings-nav {
   width: 196px; flex-shrink: 0; border-right: 1px solid var(--border);
   padding: 16px 10px; overflow-y: auto; background: var(--surface-solid);
+  transition: width 0.22s cubic-bezier(0.22,1,0.36,1), padding 0.22s cubic-bezier(0.22,1,0.36,1);
+  overflow: hidden;
+}
+.settings-nav.sn-collapsed { width: 0; padding: 0; border-right: none; }
+.sn-toggle-btn {
+  display: flex; align-items: center; background: none; border: none;
+  cursor: pointer; color: var(--text-3); padding: 5px; border-radius: 7px;
+  font-size: 20px; transition: background 0.12s, color 0.12s; flex-shrink: 0;
+}
+.sn-toggle-btn:hover { background: rgba(0,0,0,0.06); color: var(--text); }
+.settings-body-header {
+  display: flex; align-items: center; gap: 10px; margin-bottom: 20px;
+}
+.settings-body-header .sp-heading {
+  font-size: 20px; font-weight: 600; color: var(--text); letter-spacing: -0.5px;
 }
 .sn-label { font-size: 11px; font-weight: 600; letter-spacing: 0.07em; text-transform: uppercase; color: var(--text-3); padding: 10px 10px 5px; }
 .sn-item {
@@ -1373,15 +1407,15 @@ body {
 
 <!-- ═══ SIDEBAR ═══ -->
 <nav class="sidebar">
-  <div class="logo-area">
+  <a class="logo-area" href="index.html">
     <div class="logo-mark">
       <span class="ms ms-fill" style="font-size:20px;color:white;line-height:1">inventory_2</span>
     </div>
     <div class="logo-wordmark">Ledge</div>
-  </div>
+  </a>
 
   <div class="nav-section">
-    <div class="nav-label">Workspace</div>
+    <div class="nav-label" onclick="toggleNavSection(this)">Workspace<span class="ms nav-label-chev">expand_less</span></div>
     <div class="nav-item" data-page="overview">
       <span class="ms nav-ico">grid_view</span>
       Overview
@@ -1402,7 +1436,7 @@ body {
   </div>
 
   <div class="nav-section">
-    <div class="nav-label">Logistics</div>
+    <div class="nav-label" onclick="toggleNavSection(this)">Logistics<span class="ms nav-label-chev">expand_less</span></div>
     <div class="nav-item" data-page="shipping">
       <span class="ms nav-ico">local_shipping</span>
       Shipping
@@ -1418,7 +1452,7 @@ body {
   </div>
 
   <div class="nav-section">
-    <div class="nav-label">System</div>
+    <div class="nav-label" onclick="toggleNavSection(this)">System<span class="ms nav-label-chev">expand_less</span></div>
     <div class="nav-item" data-page="integrations">
       <span class="ms nav-ico">hub</span>
       Integrations
@@ -2044,7 +2078,7 @@ body {
     <div class="settings-outer">
 
       <!-- Left nav -->
-      <div class="settings-nav">
+      <div class="settings-nav sn-collapsed" id="settingsNav">
         <div class="sn-label">General</div>
         <div class="sn-item sn-active" data-sp="company">
           <span class="ms sn-ico">home</span>
@@ -2089,6 +2123,11 @@ body {
 
       <!-- Right panes -->
       <div class="settings-body" id="settingsBody">
+        <div class="settings-body-header">
+          <button class="sn-toggle-btn" onclick="toggleSettingsNav()" title="Toggle navigation">
+            <span class="ms">menu</span>
+          </button>
+        </div>
 
         <!-- Company pane -->
         <div class="settings-pane sp-active" id="sp-company">
@@ -2929,7 +2968,12 @@ document.querySelectorAll('.nav-item').forEach(item => {
 
     // Update topbar
     const titles = { overview:'Overview', inventory:'Inventory', orders:'Orders', manufacturing:'Manufacturing', shipping:'Shipping', purchasing:'Purchasing', accounting:'Accounting', integrations:'Integrations', settings:'Settings' };
-    document.getElementById('pageTitle').textContent = titles[page] || page;
+    const titleEl = document.getElementById('pageTitle');
+    if (page === 'settings') {
+      titleEl.innerHTML = '<span style="color:var(--text-3);font-weight:400">Ledge</span><span style="color:var(--text-3);margin:0 5px">›</span>Settings';
+    } else {
+      titleEl.textContent = titles[page] || page;
+    }
 
     // Segmented visibility
     document.getElementById('segGroup').style.display = page === 'overview' ? '' : 'none';
@@ -4488,6 +4532,17 @@ function showSaved(btn) {
     sidebar.classList.contains('open') ? closeSidebar() : openSidebar();
   });
   overlay && overlay.addEventListener('click', closeSidebar);
+
+  // Collapsible nav sections
+  window.toggleNavSection = function(labelEl) {
+    labelEl.closest('.nav-section').classList.toggle('collapsed');
+  };
+
+  // Collapsible settings sidebar
+  window.toggleSettingsNav = function() {
+    const nav = document.getElementById('settingsNav');
+    if (nav) nav.classList.toggle('sn-collapsed');
+  };
 
   // Close sidebar when a nav item is tapped on mobile
   document.querySelectorAll('.nav-item').forEach(item => {

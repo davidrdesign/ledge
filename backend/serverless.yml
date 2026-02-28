@@ -9,8 +9,22 @@ provider:
   region: us-east-1
   stage: ${opt:stage, 'dev'}
   environment:
-    CARTROVER_USER: ${env:CARTROVER_USER}
-    CARTROVER_KEY:  ${env:CARTROVER_KEY}
+    CARTROVER_USER:    ${env:CARTROVER_USER}
+    CARTROVER_KEY:     ${env:CARTROVER_KEY}
+    QBO_CLIENT_ID:     ${env:QBO_CLIENT_ID}
+    QBO_CLIENT_SECRET: ${env:QBO_CLIENT_SECRET}
+    QBO_REDIRECT_URI:  ${env:QBO_REDIRECT_URI}
+    QBO_SANDBOX:       ${env:QBO_SANDBOX, 'false'}
+    APP_URL:           ${env:APP_URL, 'http://localhost:3456/inventory-app.html'}
+  iam:
+    role:
+      statements:
+        - Effect: Allow
+          Action:
+            - ssm:GetParameter
+            - ssm:PutParameter
+          Resource:
+            - arn:aws:ssm:${self:provider.region}:*:parameter/ledge/qbo/*
   httpApi:
     cors:
       allowedOrigins:
@@ -21,6 +35,7 @@ provider:
       allowedMethods:
         - GET
         - PUT
+        - POST
         - OPTIONS
 
 functions:
@@ -67,4 +82,58 @@ functions:
     events:
       - httpApi:
           path: /shipments
+          method: GET
+
+  # ── QuickBooks Online ──────────────────────────────────────────────────────
+
+  qboAuth:
+    handler: src/handlers/qbo/auth.handler
+    description: GET /qbo/auth — redirect to Intuit OAuth
+    events:
+      - httpApi:
+          path: /qbo/auth
+          method: GET
+
+  qboCallback:
+    handler: src/handlers/qbo/callback.handler
+    description: GET /qbo/callback — Intuit OAuth callback, stores tokens in SSM
+    events:
+      - httpApi:
+          path: /qbo/callback
+          method: GET
+
+  qboInvoices:
+    handler: src/handlers/qbo/invoices.handler
+    description: GET/POST /qbo/invoices — QuickBooks invoices
+    events:
+      - httpApi:
+          path: /qbo/invoices
+          method: GET
+      - httpApi:
+          path: /qbo/invoices
+          method: POST
+      - httpApi:
+          path: /qbo/invoices
+          method: OPTIONS
+
+  qboBills:
+    handler: src/handlers/qbo/bills.handler
+    description: GET/POST /qbo/bills — QuickBooks vendor bills
+    events:
+      - httpApi:
+          path: /qbo/bills
+          method: GET
+      - httpApi:
+          path: /qbo/bills
+          method: POST
+      - httpApi:
+          path: /qbo/bills
+          method: OPTIONS
+
+  qboPnl:
+    handler: src/handlers/qbo/pnl.handler
+    description: GET /qbo/pnl — QuickBooks Profit & Loss report
+    events:
+      - httpApi:
+          path: /qbo/pnl
           method: GET
