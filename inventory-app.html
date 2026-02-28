@@ -2439,6 +2439,29 @@ body {
 </div><!-- /main -->
 
 <script>
+// ─── API CONFIG ─────────────────────────────────────────────────────────────
+// After running `cd backend && npm run deploy`, paste the API Gateway URL here.
+const API_BASE = ''; // e.g. 'https://abc123.execute-api.us-east-1.amazonaws.com'
+
+async function api(path, opts = {}) {
+  if (!API_BASE) return null;
+  const res = await fetch(API_BASE + path, {
+    ...opts,
+    headers: { 'Content-Type': 'application/json', ...(opts.headers || {}) },
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.error || `API error ${res.status}`);
+  }
+  return res.json();
+}
+
+function showLoading(bodyId) {
+  const el = document.getElementById(bodyId);
+  if (el) el.innerHTML = '<tr><td colspan="10" style="text-align:center;padding:48px 0;color:var(--text-3);font-size:14px">Loading…</td></tr>';
+}
+// ────────────────────────────────────────────────────────────────────────────
+
 // ─── DATA ───
 const items = [
   { id:1, name:'Titanium Frame Kit',   sku:'SKU-00291', cat:'Components',   qty:312,  reorder:100, cost:48.50,  warehouse:'Warehouse A', status:'ok',   uom:'Each',   uomAlts:['Case (12)','Pallet (120)'], autoReorder:true,  history:[280,295,300,290,305,312] },
@@ -2722,6 +2745,58 @@ document.getElementById('selectAll').addEventListener('change', function() {
   document.querySelectorAll('#invBody input[type=checkbox]').forEach(cb => cb.checked = this.checked);
 });
 
+// ─── API LOAD FUNCTIONS ──────────────────────────────────────────────────────
+async function loadInventory() {
+  if (!API_BASE) return;
+  showLoading('invBody');
+  try {
+    const data = await api('/inventory');
+    if (data && data.length) {
+      items.length = 0;
+      data.forEach((item, i) => { item.id = item.id || i + 1; items.push(item); });
+      renderRows(getFiltered());
+      renderDetail();
+    }
+  } catch (e) { console.warn('Inventory load failed:', e); renderRows(getFiltered()); }
+}
+
+async function loadOrders() {
+  if (!API_BASE) return;
+  showLoading('ordBody');
+  try {
+    const data = await api('/orders');
+    if (data && data.length) {
+      orders.length = 0;
+      data.forEach((o, i) => { o.id = o.id || i + 1; orders.push(o); });
+      renderOrderRows(getFilteredOrders());
+      renderOrderDetail();
+    }
+  } catch (e) { console.warn('Orders load failed:', e); renderOrderRows(getFilteredOrders()); }
+}
+
+async function loadShipments() {
+  if (!API_BASE) return;
+  showLoading('shipBody');
+  try {
+    const data = await api('/shipments');
+    if (data && data.length) {
+      shipments.length = 0;
+      data.forEach((s, i) => { s.id = s.id || i + 1; shipments.push(s); });
+      renderShipRows(getFilteredShip());
+      renderShipDetail();
+    }
+  } catch (e) { console.warn('Shipments load failed:', e); renderShipRows(getFilteredShip()); }
+}
+
+async function updateOrderStatus(id, status) {
+  if (!API_BASE) return;
+  try {
+    await api(`/orders/${id}`, { method: 'PUT', body: JSON.stringify({ status }) });
+    await loadOrders();
+  } catch (e) { console.warn('Order update failed:', e); }
+}
+// ────────────────────────────────────────────────────────────────────────────
+
 // Nav
 document.querySelectorAll('.nav-item').forEach(item => {
   item.addEventListener('click', function() {
@@ -2743,6 +2818,11 @@ document.querySelectorAll('.nav-item').forEach(item => {
       if (target.classList.contains('flex-page')) target.style.display = 'flex';
       else target.style.display = 'block';
     }
+
+    // Load live data from CartRover
+    if (page === 'inventory') loadInventory();
+    else if (page === 'orders') loadOrders();
+    else if (page === 'shipping') loadShipments();
 
     // Update topbar
     const titles = { overview:'Overview', inventory:'Inventory', orders:'Orders', manufacturing:'Manufacturing', shipping:'Shipping', purchasing:'Purchasing', accounting:'Accounting', integrations:'Integrations', settings:'Settings' };

@@ -1,0 +1,70 @@
+service: ledge-backend
+
+plugins:
+  - serverless-dotenv-plugin
+
+provider:
+  name: aws
+  runtime: nodejs20.x
+  region: us-east-1
+  stage: ${opt:stage, 'dev'}
+  environment:
+    CARTROVER_USER: ${env:CARTROVER_USER}
+    CARTROVER_KEY:  ${env:CARTROVER_KEY}
+  httpApi:
+    cors:
+      allowedOrigins:
+        - '*'
+      allowedHeaders:
+        - Content-Type
+        - Authorization
+      allowedMethods:
+        - GET
+        - PUT
+        - OPTIONS
+
+functions:
+
+  products:
+    handler: src/handlers/products.handler
+    description: GET /products — CartRover product catalogue
+    events:
+      - httpApi:
+          path: /products
+          method: GET
+
+  inventory:
+    handler: src/handlers/inventory.handler
+    description: GET /inventory — CartRover inventory levels
+    events:
+      - httpApi:
+          path: /inventory
+          method: GET
+
+  orders:
+    handler: src/handlers/orders.handler
+    description: GET/PUT /orders — CartRover orders
+    events:
+      - httpApi:
+          path: /orders
+          method: GET
+      - httpApi:
+          path: /orders/{id}
+          method: GET
+      - httpApi:
+          path: /orders/{id}
+          method: PUT
+      - httpApi:
+          path: /orders
+          method: OPTIONS
+      - httpApi:
+          path: /orders/{id}
+          method: OPTIONS
+
+  shipments:
+    handler: src/handlers/shipments.handler
+    description: GET /shipments — shipped order tracking
+    events:
+      - httpApi:
+          path: /shipments
+          method: GET

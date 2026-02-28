@@ -1,0 +1,20 @@
+{
+  "name": "ledge-backend",
+  "version": "1.0.0",
+  "description": "Ledge inventory app backend — CartRover proxy on AWS Lambda",
+  "main": "index.js",
+  "scripts": {
+    "deploy": "serverless deploy",
+    "deploy:prod": "serverless deploy --stage prod",
+    "logs": "serverless logs -f orders -t",
+    "remove": "serverless remove"
+  },
+  "dependencies": {
+    "node-fetch": "^3.3.2"
+  },
+  "devDependencies": {
+    "dotenv": "^16.4.5",
+    "serverless": "^3.39.0",
+    "serverless-dotenv-plugin": "^6.0.0"
+  }
+}
