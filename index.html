@@ -846,6 +846,136 @@
     .num-item.visible.d1 .num-val { animation-delay: 0.05s; }
     .num-item.visible.d2 .num-val { animation-delay: 0.15s; }
     .num-item.visible.d3 .num-val { animation-delay: 0.25s; }
+
+    /* ─── PIZAZZ ──────────────────────────────────────────────── */
+
+    /* Hero gradient mesh */
+    .hero {
+      background:
+        radial-gradient(ellipse 55% 45% at 12% 65%, rgba(216,6,33,0.055) 0%, transparent 70%),
+        radial-gradient(ellipse 50% 60% at 88% 15%, rgba(0,113,227,0.07) 0%, transparent 65%),
+        var(--white);
+    }
+
+    /* Eyebrow gradient */
+    .eyebrow {
+      background: linear-gradient(90deg, #D80621 0%, #c0392b 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    /* Feature card hover lift */
+    .feat-card {
+      transition: transform 0.28s cubic-bezier(0.22,1,0.36,1),
+                  box-shadow 0.28s cubic-bezier(0.22,1,0.36,1);
+      position: relative;
+      overflow: hidden;
+    }
+    .feat-card::after {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 2px;
+      background: linear-gradient(90deg, #D80621, #0071E3);
+      opacity: 0;
+      transition: opacity 0.28s;
+    }
+    .feat-card:hover {
+      transform: translateY(-8px);
+      box-shadow: 0 32px 80px rgba(0,0,0,0.11);
+      z-index: 2;
+    }
+    .feat-card:hover::after { opacity: 1; }
+    .feat-card:hover .feat-icon {
+      background: linear-gradient(135deg, rgba(216,6,33,0.07) 0%, rgba(0,113,227,0.07) 100%);
+      transition: background 0.28s;
+    }
+
+    /* Scrolling ticker */
+    .ticker-wrap {
+      background: #111113;
+      padding: 13px 0;
+      overflow: hidden;
+      white-space: nowrap;
+      user-select: none;
+    }
+    .ticker-track {
+      display: inline-flex;
+      align-items: center;
+      animation: tickerScroll 28s linear infinite;
+    }
+    .ticker-track:hover { animation-play-state: paused; }
+    .ticker-item {
+      font-size: 11px;
+      font-weight: 500;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: rgba(255,255,255,0.38);
+      padding: 0 32px;
+    }
+    .ticker-sep {
+      color: #D80621;
+      opacity: 0.7;
+      font-size: 9px;
+      flex-shrink: 0;
+    }
+    @keyframes tickerScroll {
+      from { transform: translateX(0); }
+      to   { transform: translateX(-50%); }
+    }
+
+    /* Dark CTA section */
+    .cta-section {
+      background: linear-gradient(160deg, #18181b 0%, #1f1f23 50%, #18181b 100%);
+      position: relative;
+      overflow: hidden;
+    }
+    .cta-section::before {
+      content: '';
+      position: absolute;
+      width: 700px; height: 700px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(216,6,33,0.08) 0%, transparent 65%);
+      top: -200px; left: -100px;
+      pointer-events: none;
+    }
+    .cta-section::after {
+      content: '';
+      position: absolute;
+      width: 600px; height: 600px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(0,113,227,0.09) 0%, transparent 65%);
+      bottom: -150px; right: -80px;
+      pointer-events: none;
+    }
+    .cta-h2 { color: white; position: relative; z-index: 1; }
+    .cta-sub { color: rgba(255,255,255,0.5); position: relative; z-index: 1; }
+    .cta-actions { position: relative; z-index: 1; }
+    .cta-section .btn-text { color: rgba(255,255,255,0.6); }
+    .cta-section .btn-text:hover { color: white; opacity: 1; }
+    .cta-section .btn-text .arrow { color: rgba(255,255,255,0.6); }
+
+    /* Gradient on primary button */
+    .btn-blue {
+      background: linear-gradient(135deg, #0071E3 0%, #0055c4 100%);
+      box-shadow: 0 4px 20px rgba(0,113,227,0.35);
+    }
+    .btn-blue:hover {
+      background: linear-gradient(135deg, #0077ED 0%, #005fd1 100%);
+      box-shadow: 0 6px 28px rgba(0,113,227,0.45);
+    }
+
+    /* Quote mark in brand red */
+    .quote-mark { color: rgba(216,6,33,0.15); }
+
+    /* Footer matches dark CTA */
+    footer {
+      background: #111113;
+      border-top: 1px solid rgba(255,255,255,0.06);
+    }
+    .footer-logo { color: rgba(255,255,255,0.4); }
+    .footer-copy { color: rgba(255,255,255,0.2); }
   </style>
 </head>
 <body>
@@ -1010,6 +1140,29 @@
     </div>
   </div>
 </section>
+
+
+<!-- ═══ TICKER ═══ -->
+<div class="ticker-wrap" aria-hidden="true">
+  <div class="ticker-track">
+    <span class="ticker-item">Inventory</span><span class="ticker-sep">✦</span>
+    <span class="ticker-item">Orders</span><span class="ticker-sep">✦</span>
+    <span class="ticker-item">Fulfillment</span><span class="ticker-sep">✦</span>
+    <span class="ticker-item">Purchasing</span><span class="ticker-sep">✦</span>
+    <span class="ticker-item">Accounting</span><span class="ticker-sep">✦</span>
+    <span class="ticker-item">Integrations</span><span class="ticker-sep">✦</span>
+    <span class="ticker-item">Shipments</span><span class="ticker-sep">✦</span>
+    <span class="ticker-item">Analytics</span><span class="ticker-sep">✦</span>
+    <span class="ticker-item">Inventory</span><span class="ticker-sep">✦</span>
+    <span class="ticker-item">Orders</span><span class="ticker-sep">✦</span>
+    <span class="ticker-item">Fulfillment</span><span class="ticker-sep">✦</span>
+    <span class="ticker-item">Purchasing</span><span class="ticker-sep">✦</span>
+    <span class="ticker-item">Accounting</span><span class="ticker-sep">✦</span>
+    <span class="ticker-item">Integrations</span><span class="ticker-sep">✦</span>
+    <span class="ticker-item">Shipments</span><span class="ticker-sep">✦</span>
+    <span class="ticker-item">Analytics</span><span class="ticker-sep">✦</span>
+  </div>
+</div>
 
 
 <!-- ═══ FEATURES ═══ -->
