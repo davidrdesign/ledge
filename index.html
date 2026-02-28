@@ -115,6 +115,17 @@
     }
 
     .hero-h1 .muted { color: var(--text-3); font-weight: 300; font-style: italic; }
+    .hero-flag {
+      height: 0.62em;
+      width: auto;
+      display: inline-block;
+      vertical-align: middle;
+      position: relative;
+      top: -0.06em;
+      border-radius: 3px;
+      margin: 0 2px;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.18);
+    }
 
     .hero-sub {
       font-size: clamp(16px, 1.8vw, 19px);
@@ -826,7 +837,7 @@
 <section class="hero">
   <div class="hero-ambient"></div>
   <p class="eyebrow">Introducing Ledge 2.0</p>
-  <h1 class="hero-h1">First Point<br><span class="muted">Energy Supply.</span></h1>
+  <h1 class="hero-h1">First <img src="https://flagcdn.com/ca.svg" alt="Canada" class="hero-flag"> Point<br><span class="muted">Energy Supply.</span></h1>
   <p class="hero-sub">One platform for stock, orders, fulfillment and accounting. Built for the way modern ops teams work.</p>
   <div class="hero-ctas">
     <button class="btn-blue" onclick="openModal('request')">Request Access</button>
